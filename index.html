@@ -160,8 +160,8 @@
                                         <input type="number" step="0.1" id="racQtd" class="form-control form-control-sm" placeholder="Ex: 25" required>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label small">Custo por kg (R$)</label>
-                                        <input type="number" step="0.01" id="racCusto" class="form-control form-control-sm" placeholder="Ex: 6.50" required>
+                                        <label class="form-label small">Valor Total (R$)</label>
+                                        <input type="number" step="0.01" id="racCusto" class="form-control form-control-sm" placeholder="Ex: 150.00" required>
                                     </div>
                                     <div class="col-12 mt-3">
                                         <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Registrar Ração</button>
@@ -502,12 +502,12 @@
         document.getElementById('formRacao').addEventListener('submit', async (e) => {
             e.preventDefault();
             const kg = parseFloat(document.getElementById('racQtd').value);
-            const custoKg = parseFloat(document.getElementById('racCusto').value);
+            const valorTotal = parseFloat(document.getElementById('racCusto').value);
             await adicionarDocumento('despesas', {
                 tipo: "Racao",
                 data: document.getElementById('racData').value,
                 desc: `Ração (${kg} kg)`,
-                valor: kg * custoKg,
+                valor: valorTotal,
                 kgRacao: kg
             });
             await carregarDados();
