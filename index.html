@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PisciControl - Gestão de Piscicultura</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card-kpi { border-left: 4px solid; border-radius: 8px; }
+        .kpi-blue { border-left-color: #0d6efd; }
+        .kpi-green { border-left-color: #198754; }
+        .kpi-warning { border-left-color: #ffc107; }
+        .kpi-danger { border-left-color: #dc3545; }
+        .kpi-info { border-left-color: #0dcaf0; }
+        .bg-custom-header { background: linear-gradient(135deg, #0d6efd, #0a58ca); }
+    </style>
+</head>
+<body>
+
+    <header class="bg-custom-header text-white py-3 mb-4 shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-0"><i class="fa-solid fa-fish me-2"></i>PisciControl</h1>
+                <small class="opacity-75">Sistema de Controle e Gestão de Tanques</small>
+            </div>
+            <span class="badge bg-light text-primary fs-6 px-3 py-2 shadow-sm" id="badgeTanque">Tanque Principal</span>
+        </div>
+    </header>
+
+    <div class="container pb-5">
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4 col-lg border-0">
+                <div class="card card-kpi kpi-blue shadow-sm p-3 bg-white">
+                    <div class="text-muted small fw-bold">TOTAL DE PEIXES</div>
+                    <div class="fs-4 fw-bold text-dark" id="kpiTotalPeixes">0 peixes</div>
+                    <div class="small text-secondary" id="kpiMortalidade">Perdas acumuladas: 0</div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg">
+                <div class="card card-kpi kpi-info shadow-sm p-3 bg-white">
+                    <div class="text-muted small fw-bold">BIOMETRIA MÉDIA</div>
+                    <div class="fs-4 fw-bold text-dark" id="kpiPesoMedio">0,000 kg</div>
+                    <div class="small text-secondary" id="kpiTamanhoMedio">Tamanho médio: 0 cm</div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg">
+                <div class="card card-kpi kpi-warning shadow-sm p-3 bg-white">
+                    <div class="text-muted small fw-bold">CUSTO TOTAL ACUMULADO</div>
+                    <div class="fs-4 fw-bold text-dark" id="kpiCustoTotal">R$ 0,00</div>
+                    <div class="small text-secondary" id="kpiRacaoConsumida">Ração: 0 kg</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg">
+                <div class="card card-kpi kpi-danger shadow-sm p-3 bg-white">
+                    <div class="text-muted small fw-bold">CUSTO ATUAL POR PEIXE</div>
+                    <div class="fs-4 fw-bold text-danger" id="kpiCustoPorPeixe">R$ 0,00</div>
+                    <div class="small text-secondary">Custo direto + operacional</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg">
+                <div class="card card-kpi kpi-green shadow-sm p-3 bg-white">
+                    <div class="text-muted small fw-bold">BIOMASSA TOTAL ATUAL</div>
+                    <div class="fs-4 fw-bold text-success" id="kpiBiomassaTotal">0,0 kg</div>
+                    <div class="small text-secondary">Estimativa viva do tanque</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-lg-8 mb-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link active" id="alevinos-tab" data-bs-toggle="tab" data-bs-target="#alevinos" type="button"><i class="fa-solid fa-water me-1"></i> Alevinos / Peixes</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="biometria-tab" data-bs-toggle="tab" data-bs-target="#biometria" type="button"><i class="fa-solid fa-ruler-combined me-1"></i> Peso e Tamanho</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="racao-tab" data-bs-toggle="tab" data-bs-target="#racao" type="button"><i class="fa-solid fa-wheat-awn me-1"></i> Ração</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="despesas-tab" data-bs-toggle="tab" data-bs-target="#despesas" type="button"><i class="fa-solid fa-receipt me-1"></i> Custos</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="mortalidade-tab" data-bs-toggle="tab" data-bs-target="#mortalidade" type="button"><i class="fa-solid fa-skull me-1"></i> Perdas</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="myTabContent">
+                            
+                            <div class="tab-pane fade show active" id="alevinos">
+                                <h6>Cadastrar Novo Lote de Alevinos / Peixes</h6>
+                                <form id="formAlevinos" class="row g-2 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Data de Entrada</label>
+                                        <input type="date" id="alevData" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Espécie</label>
+                                        <input type="text" id="alevEspecie" class="form-control form-control-sm" placeholder="Ex: Pacu, Tilápia" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Quantidade de Peixes</label>
+                                        <input type="number" id="alevQtd" class="form-control form-control-sm" placeholder="Ex: 500" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Custo Total da Compra (R$)</label>
+                                        <input type="number" step="0.01" id="alevCusto" class="form-control form-control-sm" placeholder="Ex: 600.00" required>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Cadastrar Peixes</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="biometria">
+                                <h6>Medição de Peso e Tamanho (Biometria)</h6>
+                                <form id="formBiometria" class="row g-2 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Data da Medição</label>
+                                        <input type="date" id="bioData" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Espécie</label>
+                                        <select id="bioEspecie" class="form-select form-select-sm" required></select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Qtd. de Amostra (Peixes)</label>
+                                        <input type="number" id="bioQtd" class="form-control form-control-sm" placeholder="Ex: 20" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Peso Total da Amostra (kg)</label>
+                                        <input type="number" step="0.001" id="bioPeso" class="form-control form-control-sm" placeholder="Ex: 0.132 ou 2.64" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small">Tamanho Médio da Amostra (cm)</label>
+                                        <input type="number" step="0.1" id="bioTamanho" class="form-control form-control-sm" placeholder="Ex: 18.5" required>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Salvar Medição</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="racao">
+                                <h6>Lançar Ração Utilizada</h6>
+                                <form id="formRacao" class="row g-2 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Data</label>
+                                        <input type="date" id="racData" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Quantidade (kg)</label>
+                                        <input type="number" step="0.1" id="racQtd" class="form-control form-control-sm" placeholder="Ex: 25" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Custo por kg (R$)</label>
+                                        <input type="number" step="0.01" id="racCusto" class="form-control form-control-sm" placeholder="Ex: 6.50" required>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Registrar Ração</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="despesas">
+                                <h6>Outras Despesas (Energia, Produtos, Manutenção)</h6>
+                                <form id="formDespesa" class="row g-2 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Data</label>
+                                        <input type="date" id="despData" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Descrição</label>
+                                        <input type="text" id="despDesc" class="form-control form-control-sm" placeholder="Ex: Aerador / Energia" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Valor Total (R$)</label>
+                                        <input type="number" step="0.01" id="despValor" class="form-control form-control-sm" placeholder="Ex: 150.00" required>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Registrar Despesa</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="mortalidade">
+                                <h6>Registrar Perda / Mortalidade</h6>
+                                <form id="formMortalidade" class="row g-2 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Data</label>
+                                        <input type="date" id="mortData" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Espécie</label>
+                                        <select id="mortEspecie" class="form-select form-select-sm" required></select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Quantidade Perdida</label>
+                                        <input type="number" id="mortQtd" class="form-control form-control-sm" placeholder="Ex: 2" required>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-minus"></i> Registrar Perda</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 mb-3">
+                <div class="card shadow-sm border-0 h-100 bg-white">
+                    <div class="card-header bg-dark text-white fw-bold">
+                        <i class="fa-solid fa-calculator me-2"></i>Gestão de Futura Venda
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label small">Preço de Venda por kg (R$/kg)</label>
+                            <input type="number" step="0.10" id="simPrecoKg" class="form-control form-control-sm" value="15.00">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Peso Alvo para Abate (kg)</label>
+                            <input type="number" step="0.001" id="simPesoAlvo" class="form-control form-control-sm" value="1.800">
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span>Biomassa Projetada:</span>
+                            <strong id="simBiomassaProj">0 kg</strong>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span>Faturamento Total Bruto:</span>
+                            <strong class="text-success fs-6" id="simFatTotal">R$ 0,00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span>Custo Atual Acumulado:</span>
+                            <span class="text-danger" id="simCustoAtual">R$ 0,00</span>
+                        </div>
+                        <div class="d-flex justify-content-between fs-6 fw-bold mt-3 pt-2 border-top">
+                            <span>Lucro Estimado Atual:</span>
+                            <span class="text-primary" id="simLucroProjetado">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white fw-bold small text-uppercase d-flex justify-content-between align-items-center">
+                        <span><i class="fa-solid fa-fish-fins me-1 text-primary"></i> Grid de Peixes no Tanque (Lotes Cadastrados)</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Data Entrada</th>
+                                    <th>Espécie</th>
+                                    <th>Quantidade Inicial</th>
+                                    <th>Custo Compra</th>
+                                    <th class="text-end">Ações / Editar Qtd</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbPeixes" class="small"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white fw-bold small text-uppercase">Histórico de Medição (Peso e Tamanho)</div>
+                    <div class="table-responsive" style="max-height: 250px;">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Espécie</th>
+                                    <th>Amostra</th>
+                                    <th>Peso Médio</th>
+                                    <th>Tamanho</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbBiometria" class="small"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white fw-bold small text-uppercase">Histórico Financeiro e Entradas</div>
+                    <div class="table-responsive" style="max-height: 250px;">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição / Tipo</th>
+                                    <th>Valor Total</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbDespesas" class="small"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-end mt-3">
+            <button class="btn btn-outline-danger btn-sm" onclick="resetarDados()"><i class="fa-solid fa-trash me-1"></i> Resetar Todos os Dados</button>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="modalEditPeixe" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title h6">Editar Lote de Peixes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditPeixe" class="row g-2">
+                        <input type="hidden" id="editPeixeId">
+                        <div class="col-md-6">
+                            <label class="form-label small">Data de Entrada</label>
+                            <input type="date" id="editPeixeData" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Espécie</label>
+                            <input type="text" id="editPeixeEspecie" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Quantidade de Peixes</label>
+                            <input type="number" id="editPeixeQtd" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Custo Compra (R$)</label>
+                            <input type="number" step="0.01" id="editPeixeValor" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-12 text-end mt-3">
+                            <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEditBio" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title h6">Editar Biometria</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditBio" class="row g-2">
+                        <input type="hidden" id="editBioId">
+                        <div class="col-md-6">
+                            <label class="form-label small">Data</label>
+                            <input type="date" id="editBioData" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Qtd Amostra</label>
+                            <input type="number" id="editBioQtd" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Peso Total da Amostra (kg)</label>
+                            <input type="number" step="0.001" id="editBioPeso" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Tamanho Médio (cm)</label>
+                            <input type="number" step="0.1" id="editBioTamanho" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-12 text-end mt-3">
+                            <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEditDesp" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title h6">Editar Registro Financeiro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditDesp" class="row g-2">
+                        <input type="hidden" id="editDespId">
+                        <div class="col-md-6">
+                            <label class="form-label small">Data</label>
+                            <input type="date" id="editDespData" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Descrição</label>
+                            <input type="text" id="editDespDesc" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small">Valor Total (R$)</label>
+                            <input type="number" step="0.01" id="editDespValor" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-12 text-end mt-3">
+                            <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4PvjPkLWU5F4SZ0mK7iB1ccCezYSXezs",
+            authDomain: "recanto-thome.firebaseapp.com",
+            projectId: "recanto-thome",
+            storageBucket: "recanto-thome.firebasestorage.app",
+            messagingSenderId: "714980714207",
+            appId: "1:714980714207:web:58c3e626edaeea41042b6a",
+            measurementId: "G-NYB7N1E7XZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let dados = { alevinos: [], mortalidade: [], biometrias: [], despesas: [] };
+
+        async function carregarDados() {
+            const colecoes = ['alevinos', 'mortalidade', 'biometrias', 'despesas'];
+            for (const nome of colecoes) {
+                const q = query(collection(db, nome));
+                const snap = await getDocs(q);
+                dados[nome] = [];
+                snap.forEach(d => dados[nome].push({ id: d.id, ...d.data() }));
+            }
+            renderizar();
+        }
+
+        async function adicionarDocumento(colecao, dadosDoc) {
+            const ref = await addDoc(collection(db, colecao), dadosDoc);
+            return ref.id;
+        }
+
+        async function atualizarDocumento(colecao, id, dadosDoc) {
+            await updateDoc(doc(db, colecao, id), dadosDoc);
+        }
+
+        async function removerDocumento(colecao, id) {
+            await deleteDoc(doc(db, colecao, id));
+        }
+
+        document.querySelectorAll('input[type="date"]').forEach(input => {
+            if (!input.value) input.value = new Date().toISOString().split('T')[0];
+        });
+
+        document.getElementById('formAlevinos').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const esp = document.getElementById('alevEspecie').value;
+            const qtd = parseInt(document.getElementById('alevQtd').value);
+            const valor = parseFloat(document.getElementById('alevCusto').value);
+            const data = document.getElementById('alevData').value;
+            const idLote = await adicionarDocumento('alevinos', { data, especie: esp, qtd, valor });
+            await adicionarDocumento('despesas', { tipo: "Alevinos", data, desc: `Alevinos: ${esp} (${qtd} un)`, valor });
+            await carregarDados();
+            e.target.reset();
+            document.getElementById('alevData').value = new Date().toISOString().split('T')[0];
+        });
+
+        document.getElementById('formBiometria').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await adicionarDocumento('biometrias', {
+                data: document.getElementById('bioData').value,
+                especie: document.getElementById('bioEspecie').value,
+                qtd: parseFloat(document.getElementById('bioQtd').value),
+                pesoTotal: parseFloat(document.getElementById('bioPeso').value),
+                tamanhoMedio: parseFloat(document.getElementById('bioTamanho').value)
+            });
+            await carregarDados();
+            e.target.reset();
+            document.getElementById('bioData').value = new Date().toISOString().split('T')[0];
+        });
+
+        document.getElementById('formRacao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const kg = parseFloat(document.getElementById('racQtd').value);
+            const custoKg = parseFloat(document.getElementById('racCusto').value);
+            await adicionarDocumento('despesas', {
+                tipo: "Racao",
+                data: document.getElementById('racData').value,
+                desc: `Ração (${kg} kg)`,
+                valor: kg * custoKg,
+                kgRacao: kg
+            });
+            await carregarDados();
+            e.target.reset();
+            document.getElementById('racData').value = new Date().toISOString().split('T')[0];
+        });
+
+        document.getElementById('formDespesa').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await adicionarDocumento('despesas', {
+                tipo: "Operacional",
+                data: document.getElementById('despData').value,
+                desc: document.getElementById('despDesc').value,
+                valor: parseFloat(document.getElementById('despValor').value)
+            });
+            await carregarDados();
+            e.target.reset();
+            document.getElementById('despData').value = new Date().toISOString().split('T')[0];
+        });
+
+        document.getElementById('formMortalidade').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await adicionarDocumento('mortalidade', {
+                data: document.getElementById('mortData').value,
+                especie: document.getElementById('mortEspecie').value,
+                qtd: parseInt(document.getElementById('mortQtd').value)
+            });
+            await carregarDados();
+            e.target.reset();
+            document.getElementById('mortData').value = new Date().toISOString().split('T')[0];
+        });
+
+        ['simPesoAlvo', 'simPrecoKg'].forEach(id => {
+            document.getElementById(id).addEventListener('input', renderizar);
+        });
+
+        window.abrirEditPeixe = function(id) {
+            const p = dados.alevinos.find(item => item.id === id);
+            if (!p) return;
+            document.getElementById('editPeixeId').value = p.id;
+            document.getElementById('editPeixeData').value = p.data;
+            document.getElementById('editPeixeEspecie').value = p.especie;
+            document.getElementById('editPeixeQtd').value = p.qtd;
+            document.getElementById('editPeixeValor').value = p.valor;
+            new bootstrap.Modal(document.getElementById('modalEditPeixe')).show();
+        };
+
+        document.getElementById('formEditPeixe').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editPeixeId').value;
+            await atualizarDocumento('alevinos', id, {
+                data: document.getElementById('editPeixeData').value,
+                especie: document.getElementById('editPeixeEspecie').value,
+                qtd: parseInt(document.getElementById('editPeixeQtd').value),
+                valor: parseFloat(document.getElementById('editPeixeValor').value)
+            });
+            await carregarDados();
+            bootstrap.Modal.getInstance(document.getElementById('modalEditPeixe')).hide();
+        });
+
+        window.removerPeixe = async function(id) {
+            await removerDocumento('alevinos', id);
+            await carregarDados();
+        };
+
+        window.abrirEditBio = function(id) {
+            const b = dados.biometrias.find(item => item.id === id);
+            if (!b) return;
+            document.getElementById('editBioId').value = b.id;
+            document.getElementById('editBioData').value = b.data;
+            document.getElementById('editBioQtd').value = b.qtd;
+            document.getElementById('editBioPeso').value = b.pesoTotal;
+            document.getElementById('editBioTamanho').value = b.tamanhoMedio;
+            new bootstrap.Modal(document.getElementById('modalEditBio')).show();
+        };
+
+        document.getElementById('formEditBio').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editBioId').value;
+            await atualizarDocumento('biometrias', id, {
+                data: document.getElementById('editBioData').value,
+                qtd: parseFloat(document.getElementById('editBioQtd').value),
+                pesoTotal: parseFloat(document.getElementById('editBioPeso').value),
+                tamanhoMedio: parseFloat(document.getElementById('editBioTamanho').value)
+            });
+            await carregarDados();
+            bootstrap.Modal.getInstance(document.getElementById('modalEditBio')).hide();
+        });
+
+        window.abrirEditDesp = function(id) {
+            const d = dados.despesas.find(item => item.id === id);
+            if (!d) return;
+            document.getElementById('editDespId').value = d.id;
+            document.getElementById('editDespData').value = d.data;
+            document.getElementById('editDespDesc').value = d.desc;
+            document.getElementById('editDespValor').value = d.valor;
+            new bootstrap.Modal(document.getElementById('modalEditDesp')).show();
+        };
+
+        document.getElementById('formEditDesp').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editDespId').value;
+            await atualizarDocumento('despesas', id, {
+                data: document.getElementById('editDespData').value,
+                desc: document.getElementById('editDespDesc').value,
+                valor: parseFloat(document.getElementById('editDespValor').value)
+            });
+            await carregarDados();
+            bootstrap.Modal.getInstance(document.getElementById('modalEditDesp')).hide();
+        });
+
+        window.removerBiometria = async function(id) {
+            await removerDocumento('biometrias', id);
+            await carregarDados();
+        };
+
+        window.removerDespesa = async function(id) {
+            await removerDocumento('despesas', id);
+            await carregarDados();
+        };
+
+        window.resetarDados = async function() {
+            if (confirm("Deseja apagar todos os registros salvos?")) {
+                for (const nome of ['alevinos', 'mortalidade', 'biometrias', 'despesas']) {
+                    const snap = await getDocs(collection(db, nome));
+                    for (const d of snap.docs) {
+                        await deleteDoc(doc(db, nome, d.id));
+                    }
+                }
+                await carregarDados();
+            }
+        };
+
+        function renderizar() {
+            const especies = [...new Set(dados.alevinos.map(a => a.especie))];
+            const selectBio = document.getElementById('bioEspecie');
+            const selectMort = document.getElementById('mortEspecie');
+            
+            if (especies.length > 0) {
+                selectBio.innerHTML = especies.map(esp => `<option value="${esp}">${esp}</option>`).join('');
+                selectMort.innerHTML = especies.map(esp => `<option value="${esp}">${esp}</option>`).join('');
+            } else {
+                selectBio.innerHTML = `<option value="Pacu">Pacu</option>`;
+                selectMort.innerHTML = `<option value="Pacu">Pacu</option>`;
+            }
+
+            const totalAlevinos = dados.alevinos.reduce((acc, a) => acc + a.qtd, 0);
+            const totalMortalidade = dados.mortalidade.reduce((acc, m) => acc + m.qtd, 0);
+            const peixesVivos = totalAlevinos - totalMortalidade;
+
+            document.getElementById('kpiTotalPeixes').innerText = `${peixesVivos} peixes`;
+            document.getElementById('kpiMortalidade').innerText = `Perdas acumuladas: ${totalMortalidade}`;
+
+            let pesoMedio = 0;
+            let tamanhoMedio = 0;
+            if (dados.biometrias.length > 0) {
+                const ultBio = [...dados.biometrias].sort((a, b) => new Date(a.data) - new Date(b.data)).pop();
+                pesoMedio = ultBio.pesoTotal / ultBio.qtd;
+                tamanhoMedio = ultBio.tamanhoMedio;
+            }
+            const biomassaTotal = peixesVivos * pesoMedio;
+
+            document.getElementById('kpiPesoMedio').innerText = `${pesoMedio.toFixed(3)} kg`;
+            document.getElementById('kpiTamanhoMedio').innerText = `Tamanho médio: ${tamanhoMedio.toFixed(1)} cm`;
+            document.getElementById('kpiBiomassaTotal').innerText = `${biomassaTotal.toFixed(1)} kg`;
+
+            const custoTotal = dados.despesas.reduce((acc, d) => acc + d.valor, 0);
+            const totalKgRacao = dados.despesas.reduce((acc, d) => acc + (d.kgRacao || 0), 0);
+            const custoPorPeixe = peixesVivos > 0 ? (custoTotal / peixesVivos) : 0;
+
+            document.getElementById('kpiCustoTotal').innerText = `R$ ${custoTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('kpiRacaoConsumida').innerText = `Ração: ${totalKgRacao.toFixed(1)} kg consumidos`;
+            document.getElementById('kpiCustoPorPeixe').innerText = `R$ ${custoPorPeixe.toFixed(2)}`;
+
+            const precoKg = parseFloat(document.getElementById('simPrecoKg').value) || 0;
+            const pesoAlvo = parseFloat(document.getElementById('simPesoAlvo').value) || 0;
+
+            const biomassaProjetada = peixesVivos * pesoAlvo;
+            const faturamentoProjetado = biomassaProjetada * precoKg;
+            const lucroProjetado = faturamentoProjetado - custoTotal;
+
+            document.getElementById('simBiomassaProj').innerText = `${biomassaProjetada.toFixed(1)} kg`;
+            document.getElementById('simFatTotal').innerText = `R$ ${faturamentoProjetado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('simCustoAtual').innerText = `R$ ${custoTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('simLucroProjetado').innerText = `R$ ${lucroProjetado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+            const tbPeixes = document.getElementById('tbPeixes');
+            tbPeixes.innerHTML = '';
+            if (dados.alevinos.length === 0) {
+                tbPeixes.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Nenhum lote cadastrado. Use a aba "Alevinos / Peixes" para cadastrar seus peixes.</td></tr>`;
+            } else {
+                [...dados.alevinos].sort((a,b) => new Date(b.data) - new Date(a.data)).forEach(p => {
+                    tbPeixes.innerHTML += `
+                        <tr>
+                            <td>${p.data.split('-').reverse().join('/')}</td>
+                            <td><span class="badge bg-primary">${p.especie}</span></td>
+                            <td><strong>${p.qtd} un</strong></td>
+                            <td>R$ ${p.valor.toFixed(2)}</td>
+                            <td class="text-end">
+                                <button class="btn btn-outline-primary btn-sm py-0 px-2 me-1" onclick="abrirEditPeixe('${p.id}')"><i class="fa-solid fa-pen me-1"></i>Editar Qtd</button>
+                                <button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="removerPeixe('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const tbBio = document.getElementById('tbBiometria');
+            tbBio.innerHTML = '';
+            [...dados.biometrias].sort((a,b) => new Date(b.data) - new Date(a.data)).forEach(b => {
+                const pm = (b.pesoTotal / b.qtd).toFixed(3);
+                tbBio.innerHTML += `
+                    <tr>
+                        <td>${b.data.split('-').reverse().join('/')}</td>
+                        <td><span class="badge bg-secondary">${b.especie}</span></td>
+                        <td>${b.qtd} peixes</td>
+                        <td><strong>${pm} kg</strong></td>
+                        <td>${b.tamanhoMedio} cm</td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-primary btn-sm py-0 px-1 me-1" onclick="abrirEditBio('${b.id}')"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="removerBiometria('${b.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            const tbDesp = document.getElementById('tbDespesas');
+            tbDesp.innerHTML = '';
+            [...dados.despesas].sort((a,b) => new Date(b.data) - new Date(a.data)).forEach(d => {
+                tbDesp.innerHTML += `
+                    <tr>
+                        <td>${d.data.split('-').reverse().join('/')}</td>
+                        <td>${d.desc}</td>
+                        <td class="fw-bold">R$ ${d.valor.toFixed(2)}</td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-primary btn-sm py-0 px-1 me-1" onclick="abrirEditDesp('${d.id}')"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="removerDespesa('${d.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        carregarDados();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

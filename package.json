@@ -1,0 +1,11 @@
+{
+  "name": "recantothome",
+  "version": "1.0.0",
+  "description": "PisciControl - Sistema de Controle e Gestão de Piscicultura",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "author": "Thomas Edson",
+  "license": "MIT"
+}
